@@ -110,57 +110,71 @@ class App extends React.Component {
   };
 
   onSubmit = () => {
-    requestOptions = {
-      method: 'POST',
-      headers: {
-        Accept: 'application/json',
-        Authorization: 'Key 069d152bff724312b51b149dea3d255d',
-      },
-      body: JSON.stringify({
-        user_app_id: {
-          user_id: 'iv0qxjeyzac0',
-          app_id: '3d107acf0a9c483a832b213bd2461a60',
+    if (this.state.input) {
+      requestOptions = {
+        method: 'POST',
+        headers: {
+          Accept: 'application/json',
+          Authorization: 'Key 069d152bff724312b51b149dea3d255d',
         },
-        inputs: [
-          {
-            data: {
-              image: {
-                url: this.state.input,
+        body: JSON.stringify({
+          user_app_id: {
+            user_id: 'iv0qxjeyzac0',
+            app_id: '3d107acf0a9c483a832b213bd2461a60',
+          },
+          inputs: [
+            {
+              data: {
+                image: {
+                  url: this.state.input,
+                },
               },
             },
-          },
-        ],
-      }),
-    };
-    this.setState({ imageUrl: this.state.input });
-    fetch(
-      'https://api.clarifai.com/v2/models/f76196b43bbd45c99b4f3cd8e8b40a8a/versions/45fb9a671625463fa646c3523a3087d5/outputs',
-      requestOptions
-    )
-      .then((response) => response.json())
-      .then((result) => {
-        if (result) {
-          fetch('http://localhost:3000/image', {
-            method: 'put',
-            headers: { 'content-type': 'application/json' },
-            body: JSON.stringify({
-              id: this.state.user.id,
-            }),
-          })
-            .then((response) => response.json())
-            .then((count) => {
-              this.setState(Object.assign(this.state.user, { entries: count }));
-            });
-        }
-        this.displayFaceBox(this.calculateFaceLocation(result));
+          ],
+        }),
+      };
+      this.setState({ imageUrl: this.state.input });
+      fetch(
+        'https://api.clarifai.com/v2/models/f76196b43bbd45c99b4f3cd8e8b40a8a/versions/45fb9a671625463fa646c3523a3087d5/outputs',
+        requestOptions
+      )
+        .then((response) => response.json())
+        .then((result) => {
+          if (result) {
+            fetch('http://localhost:3000/image', {
+              method: 'put',
+              headers: { 'content-type': 'application/json' },
+              body: JSON.stringify({
+                id: this.state.user.id,
+              }),
+            })
+              .then((response) => response.json())
+              .then((count) => {
+                this.setState(
+                  Object.assign(this.state.user, { entries: count })
+                );
+              });
+          }
+          this.displayFaceBox(this.calculateFaceLocation(result));
+        })
+        .catch((error) => console.log('error', error));
+    } else {
+      this.setState({
+        box: {},
+        imageUrl: '',
       })
-      .catch((error) => console.log('error', error));
+    }
   };
 
   onRouteChange = (route) => {
     if (route === 'signout') {
       this.setState({ isSignedIn: false });
     } else if (route === 'home') {
+      this.setState({
+        box: {},
+        imageUrl: '',
+        input: '',
+      });
       this.setState({ isSignedIn: true });
     }
     this.setState({ route: route });
@@ -169,10 +183,10 @@ class App extends React.Component {
   render() {
     const { isSignedIn, imageUrl, route, box } = this.state;
     return (
-      <div className="App">
+      <div className='App'>
         <Particles
-          className="particles"
-          id="tsparticles"
+          className='particles'
+          id='tsparticles'
           options={particlesOptions}
         />
         <Navigation
